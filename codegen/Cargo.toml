@@ -1,0 +1,16 @@
+[package]
+name = "CQRuSt_codegen"
+version = "0.0.1"
+authors = ["Tyler Thrailkill <tylerbthrailkill@gmail.com>"]
+description = "Code generation for the CQRuSt framework"
+readme = "../README.md"
+
+[lib]
+plugin = true
+
+[dependencies]
+rocket = { version = "0.1.2" }
+rocket_codegen = { version = "0.1.2" }
+CQRuSt = { version = "0.0.1", path = "../lib/" }
+lazy_static = "0.1.*"
+
