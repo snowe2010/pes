@@ -5,10 +5,10 @@ authors = ["Tyler Thrailkill <tyler.b.thrailkill@gmail.com>"]
 workspace = "../../"
 
 [dependencies]
-CQRuSt = { path = "../../lib" }
-CQRuSt_codegen = { path = "../../codegen" }
+cqrust = { path = "../../lib" }
+cqrust_codegen = { path = "../../codegen" }
 rocket = { version = "0.1.2" }
 rocket_codegen = { version = "0.1.2" }
 
 [dev-dependencies]
-CQRuSt = { path = "../../lib", features = ["testing"] }
+cqrust = { path = "../../lib", features = ["testing"] }

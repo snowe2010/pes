@@ -1,12 +1,16 @@
 #![feature(plugin)]
-#![plugin(CQRuSt_codegen)]
+#![plugin(cqrust_codegen)]
 #![plugin(rocket_codegen)]
 extern crate rocket;
-extern crate CQRuSt;
+extern crate cqrust;
+
+
+use cqrust::Crust;
 
 #[get("/")]
 fn hello() -> &'static str {
-    CQRuSt::Crust::send();
+    let crust = Crust::new();
+    crust.send(&"command_handler".to_string());
     "Hi!"
 }
 
@@ -15,7 +19,7 @@ fn boomshakalaka() -> &'static str {
     "HAHAHA"
 }
 
-#[CQRuSt]
+#[cqrust()]
 fn command_handler() {
     println!("Command handler ran! OMG I DID IT");
 }
@@ -26,7 +30,7 @@ fn main() {
     println!("Blargh")
 }
 
-//#[CQRuSt]
+//#[cqrust]
 //struct BLah {
 //
 //}

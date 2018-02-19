@@ -4,7 +4,7 @@ use syntax::symbol::Symbol;
 pub trait MetaItemExt {
     fn name_value(&self) -> Option<(&Symbol, &Lit)>;
     fn str_lit(&self) -> Option<&Symbol>;
-    fn int_lit(&self) -> Option<u64>;
+//    fn int_lit(&self) -> Option<u64>;
 }
 
 impl MetaItemExt for NestedMetaItem {
@@ -22,10 +22,10 @@ impl MetaItemExt for NestedMetaItem {
         })
     }
 
-    fn int_lit(&self) -> Option<u64> {
-        self.literal().and_then(|lit| match lit.node {
-            LitKind::Int(n, _) => Some(n),
-            _ => None,
-        })
-    }
+//    fn int_lit(&self) -> Option<u64> {
+//        self.literal().and_then(|lit| match lit.node {
+//            LitKind::Int(n, _) => Some(n),
+//            _ => None,
+//        })
+//    }
 }

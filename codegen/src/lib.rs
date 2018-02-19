@@ -8,6 +8,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 #![allow(unused_mut)]
+#![feature(i128_type)]
 #[macro_use]
 extern crate lazy_static;
 
@@ -16,7 +17,7 @@ extern crate lazy_static;
 extern crate syntax_ext;
 extern crate rustc;
 extern crate rustc_plugin;
-extern crate CQRuSt;
+extern crate cqrust;
 
 #[macro_use] mod utils;
 mod parser;
@@ -40,21 +41,22 @@ use utils::{IdentExt, ArgExt};
 
 use rustc_plugin::Registry;
 
-const DEBUG_ENV_VAR: &'static str = "ROCKET_CODEGEN_DEBUG";
+const DEBUG_ENV_VAR: &'static str = "CQRUST_CODEGEN_DEBUG";
 
-const PARAM_PREFIX: &'static str = "rocket_param_";
-const ROUTE_STRUCT_PREFIX: &'static str = "static_rocket_route_info_for_";
-const CATCH_STRUCT_PREFIX: &'static str = "static_rocket_catch_info_for_";
-const ROUTE_FN_PREFIX: &'static str = "rocket_route_fn_";
-const CATCH_FN_PREFIX: &'static str = "rocket_catch_fn_";
+const PARAM_PREFIX: &'static str = "cqrust_param_";
+const ROUTE_STRUCT_PREFIX: &'static str = "static_cqrust_route_info_for_";
+const CATCH_STRUCT_PREFIX: &'static str = "static_cqrust_catch_info_for_";
+const ROUTE_FN_PREFIX: &'static str = "cqrust_route_fn_";
+const CATCH_FN_PREFIX: &'static str = "cqrust_catch_fn_";
 
 static ONLY_STRUCTS_ERR: &'static str = "`FromForm` can only be derived for \
     structures with named fields.";
-static PRIVATE_LIFETIME: &'static str = "'rocket";
+static PRIVATE_LIFETIME: &'static str = "'cqrust";
 
 #[plugin_registrar]
 pub fn registrar(reg: &mut Registry) {
-    reg.register_syntax_extension(Symbol::intern("CQRuSt"), MultiDecorator(Box::new(command_handler)));
+//    debug!("HERE");
+    reg.register_syntax_extension(Symbol::intern("cqrust"), MultiDecorator(Box::new(command_handler)));
 }
 
 pub fn command_handler(ecx: &mut ExtCtxt, sp: Span, meta_item: &MetaItem,
@@ -72,25 +74,28 @@ pub fn command_handler(ecx: &mut ExtCtxt, sp: Span, meta_item: &MetaItem,
     println!("meta_item_list: {:#?}", meta_item.meta_item_list());
 
 
-    // Check that there are no meta items, i.e. CQRuSt(something here) or even CQRuSt()
-    match meta_item.meta_item_list() {
-        Some(it) => {
-            ecx.struct_span_err(sp, "incorrect use of attribute")
-                .help("attributes in CQRuSt must have the form: #[name(...)]")
-                .emit();
-            ecx.span_fatal(sp, "malformed attribute");
-        },
-        None => {}
-    }
+    // Check that there are no meta items, i.e. cqrust(something here) or even cqrust()
+//    match meta_item.meta_item_list() {
+//        Some(it) => {
+//            ecx.struct_span_err(sp, "incorrect use of attribute")
+//                .help("attributes in cqrust must have the form: #[cqrsut]")
+//                .emit();
+//            ecx.span_fatal(sp, "malformed attribute");
+//        },
+//        None => {}
+//    }
 
     let route = RouteParams::from(ecx, sp, meta_item, annotated);
 
     let user_fn_name = route.annotated_fn.ident();
     let route_fn_name = user_fn_name.prepend("CQRS_").prepend(ROUTE_FN_PREFIX);
+    let route_fn_name_name = user_fn_name.prepend("name_").prepend(ROUTE_FN_PREFIX);
+    let the_name = "aname".to_string();
 
     emit_item(push, quote_item!(ecx,
         fn $route_fn_name<'_b>() {
             println!("YAYAYAYAY");
+            debug!("HERE");
         }
     ).unwrap());
 
@@ -98,9 +103,10 @@ pub fn command_handler(ecx: &mut ExtCtxt, sp: Span, meta_item: &MetaItem,
 
     emit_item(push, quote_item!(ecx,
         #[allow(non_upper_case_globals)]
-        pub static $struct_name: CQRuSt::CommandGatewayHandlerInfo =
-            CQRuSt::CommandGatewayHandlerInfo {
+        pub static $struct_name: cqrust::CommandGatewayHandlerInfo =
+            cqrust::CommandGatewayHandlerInfo {
                 handler: $route_fn_name,
+                name: $the_name
             };
     ).unwrap());
     println!("function : {:#?}", function);

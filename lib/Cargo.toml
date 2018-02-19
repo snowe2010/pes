@@ -1,5 +1,5 @@
 [package]
-name = "CQRuSt"
+name = "cqrust"
 version = "0.0.1"
 authors = ["Tyler Thrailkill <tylerbthrailkill@gmail.com>"]
 description = """
@@ -10,10 +10,11 @@ CQRS framework written in Rust for Rust.
 lazy_static = "0.1.*"
 rocket = { version = "0.1.2" }
 rocket_codegen = { version = "0.1.2" }
+term-painter = "^0.2"
 
 [dev-dependencies]
 lazy_static = "0.2"
-CQRuSt_codegen = { version = "0.0.1", path = "../codegen" }
+cqrust_codegen = { version = "0.0.1", path = "../codegen" }
 
 #[dependencies.hyper]
 #version = "^0.9"
@@ -23,5 +24,5 @@ CQRuSt_codegen = { version = "0.0.1", path = "../codegen" }
 testing = []
 
 #[lib]
-#name = "CQRuSt"
+#name = "cqrust"
 #plugin = true

@@ -53,7 +53,7 @@ pub fn option_as_expr<T: ToTokens>(ecx: &ExtCtxt, opt: &Option<T>) -> P<Expr> {
 
 #[inline]
 pub fn emit_item(push: &mut FnMut(Annotatable), item: P<Item>) {
-    debug!("Emitting item: {}", item_to_string(&item));
+//    debug!("Emitting item: {}", item_to_string(&item));
     push(Annotatable::Item(item));
 }
 

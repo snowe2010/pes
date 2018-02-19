@@ -11,6 +11,7 @@ impl Function {
         let inner = match *annotated {
             Annotatable::Item(ref item) => match item.node {
                 ItemKind::Fn(ref decl, ..) => {
+                    println!("Item Name: {}", item.ident.name);
                     span((item.ident, decl.clone().unwrap()), item.span)
                 }
                 _ => return Err(item.span)
