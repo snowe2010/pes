@@ -8,21 +8,14 @@ CQRS framework written in Rust for Rust.
 
 [dependencies]
 lazy_static = "0.1.*"
-rocket = { version = "0.1.2" }
-rocket_codegen = { version = "0.1.2" }
-term-painter = "^0.2"
+cqrust_codegen = { version = "0.0.1", path = "../codegen" }
 
 [dev-dependencies]
 lazy_static = "0.2"
-cqrust_codegen = { version = "0.0.1", path = "../codegen" }
-
-#[dependencies.hyper]
-#version = "^0.9"
-#default-features = false
 
 [features]
 testing = []
 
-#[lib]
-#name = "cqrust"
-#plugin = true
+[lib]
+name = "cqrust"
+plugin = true

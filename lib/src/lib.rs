@@ -1,19 +1,24 @@
-#![feature(quote, concat_idents, plugin_registrar, rustc_private, unicode)]
+#![feature(proc_macro)]
 
-#[macro_use] extern crate log;
-extern crate term_painter;
+#[macro_use]
+extern crate cqrust_codegen;
 
-mod crust;
-pub use crust::Crust;
-mod codegen;
-mod router;
-pub mod handler;
+use cqrust_codegen::not_the_bees;
 
-pub use router::Route;
 
-#[doc(inline)] pub use handler::{Handler};
+/// This one shouldn't raise any errors because it doesn't have a field
+/// named "bees", or any named fields at all for that matter.
+#[not_the_bees]
+struct Foo(i32);
 
-pub use codegen::{CommandGatewayHandlerInfo};
-pub fn send(name: &String) {
-    Crust::new().send(name)
+/// This is where the action will happen.
+#[not_the_bees]
+struct Bar {
+    baz: i32,
+    bees: String,
+}
+
+/// This is only here so that the crate will run as a binary crate
+fn main() {
+    println!("Hello, world!");
 }

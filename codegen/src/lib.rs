@@ -1,131 +1,89 @@
-#![crate_type = "dylib"]
-#![feature(plugin_registrar, rustc_private)]
-#![feature(custom_attribute)]
-#![feature(quote, concat_idents, plugin_registrar, rustc_private, unicode)]
-#![allow(unused_attributes)]
-#![allow(unused_variables)]
-#![allow(non_snake_case)]
-#![allow(dead_code)]
-#![allow(unused_imports)]
-#![allow(unused_mut)]
-#![feature(i128_type)]
+#![feature(proc_macro)]
+
+extern crate syn;
 #[macro_use]
-extern crate lazy_static;
+extern crate quote;
+extern crate proc_macro;
+extern crate proc_macro2;
 
-#[macro_use] extern crate syntax;
-#[macro_use] extern crate log;
-extern crate syntax_ext;
-extern crate rustc;
-extern crate rustc_plugin;
-extern crate cqrust;
+use syn::Item;
+use syn::Fields;
+use syn::spanned::Spanned;
+use proc_macro::TokenStream;
+use proc_macro2::Span;
 
-#[macro_use] mod utils;
-mod parser;
+#[proc_macro_attribute]
+pub fn not_the_bees(_metadata: TokenStream, input: TokenStream) -> TokenStream {
+    // Parse the `TokenStream` into a syntax tree, specifically an `Item`. An `Item` is a
+    // syntax item that can appear at the module level i.e. a function definition, a struct
+    // or enum definition, etc.
+    let item: syn::Item = syn::parse(input).expect("failed to parse input");
 
-use std::env;
-use std::mem::transmute;
+    // Match on the parsed item and respond accordingly.
+    match item {
+        // If the attribute was applied to a struct, we're going to do
+        // some more work to figure out if there's a field named "bees".
+        // It's important to take a reference to `struct_item`, otherwise
+        // you partially move `item`.
+        Item::Struct(ref struct_item) => {
+            if has_bees(struct_item) {
+                light_it_up(struct_item);
+            }
+        },
 
-use syntax::ptr::P;
-use syntax::ast::{Item};
-use syntax::ast::{ItemKind, Expr, MetaItem, Mutability, VariantData, Ident};
-use syntax::codemap::{Span, Spanned};
-use syntax::ext::base::{Annotatable, ExtCtxt};
-use syntax::ext::base::SyntaxExtension;
-use syntax::ext::base::SyntaxExtension::MultiDecorator;
-use syntax::symbol::Symbol;
+        // If the attribute was applied to any other kind of item, we want
+        // to generate a compiler error.
+        _ => {
+            // This is how you generate a compiler error. You can also
+            // generate a "note," or a "warning."
+            item.span().unstable()
+                .error("This is not a struct")
+                .emit();
+        },
+    }
 
-use utils::{emit_item, span, sep_by_tok, option_as_expr, strip_ty_lifetimes};
-use utils::SpanExt;
-use parser::{Function, Method, Param, RouteParams};
-use utils::{IdentExt, ArgExt};
-
-use rustc_plugin::Registry;
-
-const DEBUG_ENV_VAR: &'static str = "CQRUST_CODEGEN_DEBUG";
-
-const PARAM_PREFIX: &'static str = "cqrust_param_";
-const ROUTE_STRUCT_PREFIX: &'static str = "static_cqrust_route_info_for_";
-const CATCH_STRUCT_PREFIX: &'static str = "static_cqrust_catch_info_for_";
-const ROUTE_FN_PREFIX: &'static str = "cqrust_route_fn_";
-const CATCH_FN_PREFIX: &'static str = "cqrust_catch_fn_";
-
-static ONLY_STRUCTS_ERR: &'static str = "`FromForm` can only be derived for \
-    structures with named fields.";
-static PRIVATE_LIFETIME: &'static str = "'cqrust";
-
-#[plugin_registrar]
-pub fn registrar(reg: &mut Registry) {
-//    debug!("HERE");
-    reg.register_syntax_extension(Symbol::intern("cqrust"), MultiDecorator(Box::new(command_handler)));
+    // Use `quote` to convert the syntax tree back into tokens so we can return them. Note
+    // that the tokens we're returning at this point are still just the input, we've simply
+    // converted it between a few different forms.
+    let output = quote!{ #item };
+    output.into()
 }
 
-pub fn command_handler(ecx: &mut ExtCtxt, sp: Span, meta_item: &MetaItem,
-                       annotated: &Annotatable, push: &mut FnMut(Annotatable)) {
-    let i_sp = meta_item.span.shorten_to(stringify!(Get).len());
-    println!("isp : {:#?}", i_sp);
-    let method = Some(span(Method::Get, i_sp));
-    println!("method : {:#?}", method);
-    let function = Function::from(annotated).unwrap_or_else(|item_sp| {
-        println!("oh no");
-        ecx.span_err(sp, "this attribute can only be used on functions...");
-        ecx.span_fatal(item_sp, "...but was applied to the item above.");
-    });
-    println!("meta_item: {:#?}", meta_item);
-    println!("meta_item_list: {:#?}", meta_item.meta_item_list());
-
-
-    // Check that there are no meta items, i.e. cqrust(something here) or even cqrust()
-//    match meta_item.meta_item_list() {
-//        Some(it) => {
-//            ecx.struct_span_err(sp, "incorrect use of attribute")
-//                .help("attributes in cqrust must have the form: #[cqrsut]")
-//                .emit();
-//            ecx.span_fatal(sp, "malformed attribute");
-//        },
-//        None => {}
-//    }
-
-    let route = RouteParams::from(ecx, sp, meta_item, annotated);
-
-    let user_fn_name = route.annotated_fn.ident();
-    let route_fn_name = user_fn_name.prepend("CQRS_").prepend(ROUTE_FN_PREFIX);
-    let route_fn_name_name = user_fn_name.prepend("name_").prepend(ROUTE_FN_PREFIX);
-    let the_name = "aname".to_string();
-
-    emit_item(push, quote_item!(ecx,
-        fn $route_fn_name<'_b>() {
-            println!("YAYAYAYAY");
-            debug!("HERE");
+/// Determine if the struct has a field named "bees"
+fn has_bees(struct_: &syn::ItemStruct) -> bool {
+    match struct_.fields {
+        // A field can only be named "bees" if it has a name, so we'll
+        // match those fields and ignore the rest.
+        Fields::Named(ref fields) => {
+            // Unwrap the field names because we know these are named fields.
+            fields.named.iter().any(|field| field.ident.unwrap() == "bees")
         }
-    ).unwrap());
-
-    let struct_name = user_fn_name.prepend("CQRS_").prepend(ROUTE_STRUCT_PREFIX);
-
-    emit_item(push, quote_item!(ecx,
-        #[allow(non_upper_case_globals)]
-        pub static $struct_name: cqrust::CommandGatewayHandlerInfo =
-            cqrust::CommandGatewayHandlerInfo {
-                handler: $route_fn_name,
-                name: $the_name
-            };
-    ).unwrap());
-    println!("function : {:#?}", function);
-    //    return item;
+        // Ignore unit structs or anonymous fields.
+        _ => {
+            false
+        },
+    }
 }
 
-
-lazy_static! {
-    pub static ref COMMANDGATEWAY: CommandGateway = CommandGateway::new();
-}
-
-pub struct CommandGateway {
-    handlers: Vec<i32>
-}
-
-impl CommandGateway {
-    pub fn new() -> CommandGateway {
-        CommandGateway {
-            handlers: Vec::new()
+/// Generate fun compiler errors
+fn light_it_up(struct_: &syn::ItemStruct) {
+    if let Fields::Named(ref fields) = struct_.fields {
+        // Piece together our exquisite error message.
+        let bees = "🐝 ".repeat(17);
+        let msg = "🐝   not the bees!!! NOT THE BEEEEEES!!! 🐝";
+        // The `join` method places the provided string between the joined items,
+        // so putting empty strings at the beginning and end will put extra
+        // newline characters at the beginning and end of the error message.
+        let bees_msg = ["", bees.as_str(), msg, bees.as_str(), ""].join("\n");
+        // Find the field named "bees".
+        for field in &fields.named {
+            let ident = field.ident.unwrap();
+            if ident == "bees" {
+                // Deliver the error message.
+                ident.span().unstable()
+                    .error(bees_msg.clone())
+                    .emit();
+            }
         }
     }
 }
