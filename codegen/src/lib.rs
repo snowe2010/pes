@@ -49,6 +49,41 @@ pub fn not_the_bees(_metadata: TokenStream, input: TokenStream) -> TokenStream {
     output.into()
 }
 
+#[proc_macro_derive(Event)]
+pub fn event(input: TokenStream) -> TokenStream {
+    // Parse the `TokenStream` into a syntax tree, specifically an `Item`. An `Item` is a
+    // syntax item that can appear at the module level i.e. a function definition, a struct
+    // or enum definition, etc.
+    let item: syn::Item = syn::parse(input).expect("failed to parse input");
+
+    // Match on the parsed item and respond accordingly.
+    match item {
+        // If the attribute was applied to a struct, we're going to do
+        // some more work to figure out if there's a field named "bees".
+        // It's important to take a reference to `struct_item`, otherwise
+        // you partially move `item`.
+        Item::Struct(ref struct_item) => {
+            let output = quote! {
+                impl struct_item.struct_token.into_tokens() {
+                  fn test() {
+
+                  }
+                }
+            };
+            output.into()
+        },
+        // If the attribute was applied to any other kind of item, we want
+        // to generate a compiler error.
+        _ => {
+            // This is how you generate a compiler error. You can also
+            // generate a "note," or a "warning."
+            item.span().unstable()
+                .error("This is not a struct")
+                .emit();
+            TokenStream::empty()
+        },
+    }
+}
 /// Determine if the struct has a field named "bees"
 fn has_bees(struct_: &syn::ItemStruct) -> bool {
     match struct_.fields {

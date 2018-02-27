@@ -22,10 +22,10 @@
 //}
 //
 //
-//fn main() {
+fn main() {
 //    rocket::ignite().mount("/", routes![hello]).launch();
-//    println!("Blargh")
-//}
+    println!("Blargh")
+}
 //
 ////#[cqrust]
 ////struct BLah {

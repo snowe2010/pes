@@ -4,6 +4,7 @@
 extern crate cqrust_codegen;
 
 use cqrust_codegen::not_the_bees;
+use cqrust_codegen::Event;
 
 
 /// This one shouldn't raise any errors because it doesn't have a field
@@ -15,7 +16,12 @@ struct Foo(i32);
 #[not_the_bees]
 struct Bar {
     baz: i32,
-    bees: String,
+//    bees: String,
+}
+
+#[derive(Event)]
+struct BarEvent {
+
 }
 
 /// This is only here so that the crate will run as a binary crate
