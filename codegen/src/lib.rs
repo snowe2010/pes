@@ -1,17 +1,20 @@
 #![feature(proc_macro)]
 
-extern crate syn;
-#[macro_use]
-extern crate quote;
 extern crate proc_macro;
 extern crate proc_macro2;
+#[macro_use]
+extern crate quote;
+extern crate syn;
 
-use syn::Item;
-use syn::Fields;
-use syn::spanned::Spanned;
-use proc_macro::TokenStream;
 use proc_macro2::Span;
+use proc_macro::TokenStream;
+//use std::Result;
+use syn::DeriveInput;
+use syn::Fields;
+use syn::Item;
+use syn::spanned::Spanned;
 
+/*
 #[proc_macro_attribute]
 pub fn not_the_bees(_metadata: TokenStream, input: TokenStream) -> TokenStream {
     // Parse the `TokenStream` into a syntax tree, specifically an `Item`. An `Item` is a
@@ -29,7 +32,7 @@ pub fn not_the_bees(_metadata: TokenStream, input: TokenStream) -> TokenStream {
             if has_bees(struct_item) {
                 light_it_up(struct_item);
             }
-        },
+        }
 
         // If the attribute was applied to any other kind of item, we want
         // to generate a compiler error.
@@ -39,18 +42,38 @@ pub fn not_the_bees(_metadata: TokenStream, input: TokenStream) -> TokenStream {
             item.span().unstable()
                 .error("This is not a struct")
                 .emit();
-        },
+        }
     }
 
     // Use `quote` to convert the syntax tree back into tokens so we can return them. Note
     // that the tokens we're returning at this point are still just the input, we've simply
     // converted it between a few different forms.
-    let output = quote!{ #item };
+    let output = quote! { #item };
     output.into()
 }
+*/
 
-#[proc_macro_derive(Event)]
+#[proc_macro_derive(Command)]
 pub fn event(input: TokenStream) -> TokenStream {
+    let ast: DeriveInput = syn::parse(input).unwrap();
+
+    // Build the impl
+    let gen = impl_hello_world(&ast);
+
+    // Return the generated impl
+    gen.into()
+}
+
+fn impl_hello_world(ast: &syn::DeriveInput) -> quote::Tokens {
+    let name = &ast.ident;
+    quote! {
+        impl Command for #name {}
+    }
+}
+
+/*
+#[proc_macro_attribute]
+pub fn not_the_bees(_metadata: TokenStream, input: TokenStream) -> TokenStream {
     // Parse the `TokenStream` into a syntax tree, specifically an `Item`. An `Item` is a
     // syntax item that can appear at the module level i.e. a function definition, a struct
     // or enum definition, etc.
@@ -63,15 +86,11 @@ pub fn event(input: TokenStream) -> TokenStream {
         // It's important to take a reference to `struct_item`, otherwise
         // you partially move `item`.
         Item::Struct(ref struct_item) => {
-            let output = quote! {
-                impl struct_item.struct_token.into_tokens() {
-                  fn test() {
+            if has_bees(struct_item) {
+                light_it_up(struct_item);
+            }
+        }
 
-                  }
-                }
-            };
-            output.into()
-        },
         // If the attribute was applied to any other kind of item, we want
         // to generate a compiler error.
         _ => {
@@ -80,11 +99,41 @@ pub fn event(input: TokenStream) -> TokenStream {
             item.span().unstable()
                 .error("This is not a struct")
                 .emit();
-            TokenStream::empty()
-        },
+        }
     }
+
+    // Use `quote` to convert the syntax tree back into tokens so we can return them. Note
+    // that the tokens we're returning at this point are still just the input, we've simply
+    // converted it between a few different forms.
+    let output = quote! { #item };
+    output.into()
 }
-/// Determine if the struct has a field named "bees"
+*/
+
+
+// Parses the inputted stream.
+
+//fn parse_input(input: TokenStream) -> Result<DeriveInput> {
+//    // Construct a string representation of the type definition
+//    let as_string = input.to_string();
+//    // Parse the string representation
+//    let parsed = syn::parse_derive_input(&as_string)
+//        .map_err(|e| ErrorKind::ParseError(e))?;
+//    Ok(parsed)
+//}
+
+//fn generate_from(ast: &DeriveInput) -> Result<Tokens> {
+//    let from_str_block = impl_from_str(ast)?;
+//    let variants_block = impl_variants(ast)?;
+//
+//    Ok(quote! {
+//            #from_str_block
+//            #variants_block
+//        })
+//}
+
+// Determine if the struct has a field named "bees"
+/*
 fn has_bees(struct_: &syn::ItemStruct) -> bool {
     match struct_.fields {
         // A field can only be named "bees" if it has a name, so we'll
@@ -98,9 +147,10 @@ fn has_bees(struct_: &syn::ItemStruct) -> bool {
             false
         },
     }
-}
+}*/
 
-/// Generate fun compiler errors
+// Generate fun compiler errors
+/*
 fn light_it_up(struct_: &syn::ItemStruct) {
     if let Fields::Named(ref fields) = struct_.fields {
         // Piece together our exquisite error message.
@@ -115,10 +165,11 @@ fn light_it_up(struct_: &syn::ItemStruct) {
             let ident = field.ident.unwrap();
             if ident == "bees" {
                 // Deliver the error message.
-                ident.span().unstable()
+                ident.span()//.unstable()
                     .error(bees_msg.clone())
                     .emit();
             }
         }
     }
 }
+*/

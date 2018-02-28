@@ -1,33 +1,14 @@
-//#![feature(plugin)]
-//#![plugin(cqrust_codegen)]
-//extern crate cqrust;
-//
-//use cqrust::Crust;
-//
-//#[get("/")]
-//fn hello() -> &'static str {
-//    let crust = Crust::new();
-//    crust.send(&"command_handler".to_string());
-//    "Hi!"
-//}
-//
-//#[get("blah")]
-//fn boomshakalaka() -> &'static str {
-//    "HAHAHA"
-//}
-//
-//#[cqrust()]
-//fn command_handler() {
-//    println!("Command handler ran! OMG I DID IT");
-//}
-//
-//
+#![feature(proc_macro)]
+
+#[macro_use]
+extern crate cqrust_codegen;
+extern crate cqrust;
+use cqrust::{Command, CommandGateway};
+
+#[derive(Command)]
+struct BarCommand {}
+
 fn main() {
-//    rocket::ignite().mount("/", routes![hello]).launch();
-    println!("Blargh")
+    println!("Hello, world!");
+    CommandGateway::send(BarCommand {});
 }
-//
-////#[cqrust]
-////struct BLah {
-////
-////}

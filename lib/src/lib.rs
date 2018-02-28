@@ -3,25 +3,29 @@
 #[macro_use]
 extern crate cqrust_codegen;
 
-use cqrust_codegen::not_the_bees;
-use cqrust_codegen::Event;
+pub trait Command {}
 
 
-/// This one shouldn't raise any errors because it doesn't have a field
-/// named "bees", or any named fields at all for that matter.
-#[not_the_bees]
-struct Foo(i32);
+//#[derive(Event)]
+//struct BarEvent {
+//
+//}
 
-/// This is where the action will happen.
-#[not_the_bees]
-struct Bar {
-    baz: i32,
-//    bees: String,
+pub struct CommandGateway {}
+
+impl CommandGateway {
+    pub fn send<T: Command>(x: T) {
+        println!("Sent to command gateway");
+        EventBus::receive(x)
+    }
 }
 
-#[derive(Event)]
-struct BarEvent {
+pub struct EventBus {}
 
+impl EventBus {
+    pub fn receive<T: Command>(x: T) {
+        println!("Received in 'aggregate'");
+    }
 }
 
 /// This is only here so that the crate will run as a binary crate
