@@ -13,7 +13,12 @@ use syn::DeriveInput;
 use syn::Fields;
 use syn::Item;
 use syn::spanned::Spanned;
-
+use syn::token::Comma;
+use syn::FnArg;
+use syn::punctuated::Punctuated;
+use syn::FnDecl;
+use syn::Type;
+use quote::ToTokens;
 /*
 #[proc_macro_attribute]
 pub fn not_the_bees(_metadata: TokenStream, input: TokenStream) -> TokenStream {
@@ -71,9 +76,9 @@ fn impl_hello_world(ast: &syn::DeriveInput) -> quote::Tokens {
     }
 }
 
-/*
+
 #[proc_macro_attribute]
-pub fn not_the_bees(_metadata: TokenStream, input: TokenStream) -> TokenStream {
+pub fn event_handler(_metadata: TokenStream, input: TokenStream) -> TokenStream {
     // Parse the `TokenStream` into a syntax tree, specifically an `Item`. An `Item` is a
     // syntax item that can appear at the module level i.e. a function definition, a struct
     // or enum definition, etc.
@@ -85,9 +90,89 @@ pub fn not_the_bees(_metadata: TokenStream, input: TokenStream) -> TokenStream {
         // some more work to figure out if there's a field named "bees".
         // It's important to take a reference to `struct_item`, otherwise
         // you partially move `item`.
-        Item::Struct(ref struct_item) => {
-            if has_bees(struct_item) {
-                light_it_up(struct_item);
+        Item::Fn(ref struct_item) => {
+            let declaration: &Box<FnDecl> = &struct_item.decl;
+            let inputs: &Punctuated<FnArg, Comma> = &declaration.inputs;
+            println!("inputs {}", inputs.len());
+            for input in inputs {
+                match *input {
+                    FnArg::Captured(ref input) => {
+
+                        match input.ty {
+                            Type::Slice(ref typeSlice) => {
+                                println!("TypeSlice");
+                                return TokenStream::empty();
+                            }
+                            Type::Array(ref typeArray) => {
+                                println!("TypeArray");
+                                return TokenStream::empty();
+                            }
+                            Type::Ptr(ref typePtr) => {
+                                println!("TypePtr");
+                                return TokenStream::empty();
+                            }
+                            Type::Reference(ref typeReference) => {
+                                println!("TypeReference");
+                                return TokenStream::empty();
+                            }
+                            Type::BareFn(ref typeBareFn) => {
+                                println!("TypeBareFn");
+                                return TokenStream::empty();
+                            }
+                            Type::Never(ref typeNever) => {
+                                println!("TypeNever");
+                                return TokenStream::empty();
+                            }
+                            Type::Tuple(ref typeTuple) => {
+                                println!("TypeTuple");
+                                return TokenStream::empty();
+                            }
+                            Type::Path(ref typePath) => {
+                                println!("TypePath");
+                                let tok  = typePath.path.into_tokens();
+                                let qu = quote! {
+                                    #tok
+                                };
+                                return TokenStream::from(qu)
+                            }
+                            Type::TraitObject(ref typeTraitObject) => {
+                                println!("TypeTraitObject");
+                                return TokenStream::empty();
+                            }
+                            Type::ImplTrait(ref TypeImplTrait) => {
+                                println!("TypeImplTrait");
+                                return TokenStream::empty();
+                            }
+                            Type::Paren(ref TypeParen) => {
+                                println!("TypeParen");
+                                return TokenStream::empty();
+                            }
+                            Type::Group(ref TypeGroup) => {
+                                println!("TypeGroup");
+                                return TokenStream::empty();
+                            }
+                            Type::Infer(ref TypeInfer) => {
+                                println!("TypeInfer");
+                                return TokenStream::empty();
+                            }
+                            Type::Macro(ref TypeMacro) => {
+                                println!("TypeMacro");
+                                return TokenStream::empty();
+                            }
+                            Type::Verbatim(ref TypeVerbatim) => {
+                                println!("TypeVerbatim");
+                                return TokenStream::empty();
+                            }
+                        }
+
+//                        println!("what?? {}", input.ty);
+                    }
+                    _ => {
+                        println!("somethign else");
+                        return TokenStream::empty()
+
+                    }
+                }
             }
         }
 
@@ -96,19 +181,20 @@ pub fn not_the_bees(_metadata: TokenStream, input: TokenStream) -> TokenStream {
         _ => {
             // This is how you generate a compiler error. You can also
             // generate a "note," or a "warning."
-            item.span().unstable()
-                .error("This is not a struct")
-                .emit();
+//            item.span().unstable()
+//                .error("This is not a struct")
+//                .emit();
+            TokenStream::empty()
         }
     }
 
     // Use `quote` to convert the syntax tree back into tokens so we can return them. Note
     // that the tokens we're returning at this point are still just the input, we've simply
     // converted it between a few different forms.
-    let output = quote! { #item };
-    output.into()
+//    let output = quote! { #item };
+//    output.into()
 }
-*/
+
 
 
 // Parses the inputted stream.
