@@ -3,6 +3,8 @@
 #[macro_use]
 extern crate cqrust_codegen;
 extern crate cqrust;
+#[macro_use]
+extern crate lazy_static;
 
 use cqrust::{Command, CommandGateway};
 use cqrust_codegen::event_handler;

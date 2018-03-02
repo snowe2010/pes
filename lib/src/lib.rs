@@ -2,15 +2,14 @@
 
 #[macro_use]
 extern crate cqrust_codegen;
+extern crate pes_common;
 extern crate eventbus;
-extern crate uuid;
 #[macro_use]
 extern crate lazy_static;
-
-mod command_bus;
+extern crate anymap;
 
 pub use eventbus::EventBus;
-pub use command_bus::{CommandBus, Command};
+pub use pes_common::{CommandBus, Command};
 
 use std::collections::VecDeque;
 

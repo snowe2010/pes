@@ -7,6 +7,7 @@ extern crate quote;
 extern crate syn;
 #[macro_use]
 extern crate lazy_static;
+extern crate pes_common;
 
 use proc_macro2::Span;
 use proc_macro::TokenStream;
@@ -21,6 +22,9 @@ use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
 use syn::token::Comma;
 use syn::Type;
+use pes_common::{CommandMetadata, CommandBus, Command};
+use std::sync::RwLock;
+
 
 #[proc_macro_derive(Command)]
 pub fn event(input: TokenStream) -> TokenStream {

@@ -1,0 +1,7 @@
+[package]
+name = "pes-common"
+version = "0.1.0"
+authors = ["Tyler Thrailkill <tyler.thrailkill@promontech.com>"]
+
+[dependencies]
+uuid = { version = "0.6", features = ["v4"] }
