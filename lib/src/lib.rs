@@ -2,33 +2,42 @@
 
 #[macro_use]
 extern crate cqrust_codegen;
+extern crate eventbus;
+extern crate uuid;
+#[macro_use]
+extern crate lazy_static;
 
-pub trait Command {}
+mod command_bus;
 
+pub use eventbus::EventBus;
+pub use command_bus::{CommandBus, Command};
 
-//#[derive(Event)]
-//struct BarEvent {
-//
-//}
+use std::collections::VecDeque;
 
-pub struct CommandGateway {}
+pub struct CommandGateway {
+    commandbus: CommandBus
+}
 
 impl CommandGateway {
-    pub fn send<T: Command>(x: T) {
+    pub fn new(commandbus: CommandBus) -> CommandGateway {
+        CommandGateway { commandbus }
+    }
+
+    pub fn send<T: Command>(&self, mut x: T) {
         println!("Sent to command gateway");
-        EventBus::receive(x)
+//        self.bus.vector.a
+        self.commandbus.post(&mut x);
     }
 }
 
-pub struct EventBus {}
+//pub struct EventBus {}
 
-impl EventBus {
-    pub fn receive<T: Command>(x: T) {
-        println!("Received in 'aggregate'");
-    }
-}
+//impl EventBus {
+//    pub fn receive<T: Command>(x: T) {
+//        println!("Received in 'aggregate'");
+//    }
+//}
 
-/// This is only here so that the crate will run as a binary crate
 fn main() {
     println!("Hello, world!");
 }

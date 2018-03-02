@@ -9,6 +9,8 @@ CQRS framework written in Rust for Rust.
 [dependencies]
 lazy_static = "0.1.*"
 cqrust_codegen = { version = "0.0.1", path = "../codegen" }
+eventbus = "0.1.5"
+uuid = { version = "0.6", features = ["v4"] }
 
 [dev-dependencies]
 lazy_static = "0.2"
