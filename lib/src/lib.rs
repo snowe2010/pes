@@ -13,29 +13,24 @@ pub use pes_common::{CommandBus, Command};
 
 use std::collections::VecDeque;
 
+lazy_static! {
+   pub static ref COMMAND_BUS: CommandBus = CommandBus::new();
+}
+
 pub struct CommandGateway {
-    commandbus: CommandBus
+    commandbus: &'static CommandBus
 }
 
 impl CommandGateway {
-    pub fn new(commandbus: CommandBus) -> CommandGateway {
+    pub fn new(commandbus: &'static CommandBus) -> CommandGateway {
         CommandGateway { commandbus }
     }
 
     pub fn send<T: Command>(&self, mut x: T) {
         println!("Sent to command gateway");
-//        self.bus.vector.a
         self.commandbus.post(&mut x);
     }
 }
-
-//pub struct EventBus {}
-
-//impl EventBus {
-//    pub fn receive<T: Command>(x: T) {
-//        println!("Received in 'aggregate'");
-//    }
-//}
 
 fn main() {
     println!("Hello, world!");

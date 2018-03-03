@@ -7,6 +7,7 @@ workspace = "../../"
 [dependencies]
 cqrust = { path = "../../lib" }
 cqrust_codegen = { path = "../../codegen" }
+pes-common = { path = "../../pes-common" }
 lazy_static = "0.1.*"
 
 #rocket = { version = "0.1.2" }

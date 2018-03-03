@@ -66,6 +66,7 @@ dependencies = [
  "cqrust 0.0.1",
  "cqrust_codegen 0.0.1",
  "lazy_static 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pes-common 0.1.0",
 ]
 
 [[package]]
