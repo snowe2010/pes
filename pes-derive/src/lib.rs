@@ -18,6 +18,7 @@ use syn::Fields;
 use syn::FnArg;
 use syn::FnDecl;
 use syn::Item;
+use syn::Ident;
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
 use syn::token::Comma;
@@ -40,18 +41,20 @@ pub fn event(input: TokenStream) -> TokenStream {
 
 fn impl_hello_world(ast: &syn::DeriveInput) -> quote::Tokens {
     let name = &ast.ident;
+    let stringified_name = format!("MYEVENT_METADATA_{}", name.to_string().to_uppercase());
+//    println!("Stringified name {}", stringified_name);
+    let ident = Ident::from(stringified_name);
     quote! {
         lazy_static! {
-            static ref MYEVENT_METADATA: RwLock<CommandMetadata<#name>> = RwLock::new(CommandMetadata::new());
-            static ref EVENT_BUS: CommandBus = CommandBus::new();
+            static ref #ident: RwLock<CommandMetadata<#name>> = RwLock::new(CommandMetadata::new());
         }
         impl Command for #name {
             fn event_metadata<F, R>(f: F) -> R where F: FnOnce(&CommandMetadata<Self>) -> R {
-                f(&*MYEVENT_METADATA.read().unwrap())
+                f(&*#ident.read().unwrap())
             }
 
             fn mut_metadata<F, R>(f: F) -> R where F: FnOnce(&mut CommandMetadata<Self>) -> R {
-                f(&mut *MYEVENT_METADATA.write().unwrap())
+                f(&mut *#ident.write().unwrap())
             }
         }
     }

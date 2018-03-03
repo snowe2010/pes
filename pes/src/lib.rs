@@ -1,7 +1,7 @@
 #![feature(proc_macro)]
 
 #[macro_use]
-extern crate cqrust_codegen;
+extern crate pes_derive;
 extern crate pes_common;
 extern crate eventbus;
 #[macro_use]

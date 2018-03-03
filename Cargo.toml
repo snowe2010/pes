@@ -1,7 +1,7 @@
 [workspace]
 members = [
   "pes-common",
-  "lib/",
-  "codegen/",
+  "pes/",
+  "pes-derive/",
   "examples/hello_world"
 ]

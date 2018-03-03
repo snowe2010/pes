@@ -1,5 +1,5 @@
 [package]
-name = "cqrust"
+name = "pes"
 version = "0.0.1"
 authors = ["Tyler Thrailkill <tylerbthrailkill@gmail.com>"]
 description = """
@@ -8,10 +8,11 @@ CQRS framework written in Rust for Rust.
 
 [dependencies]
 lazy_static = "0.1.*"
-cqrust_codegen = { version = "0.0.1", path = "../codegen" }
+pes-derive = { version = "0.0.1", path = "../pes-derive" }
 pes-common = { version = "0.1.0", path = "../pes-common"}
 eventbus = "0.1.5"
 anymap = "0.12"
+maplit = "1.0.1"
 
 [dev-dependencies]
 lazy_static = "0.2"
@@ -20,5 +21,5 @@ lazy_static = "0.2"
 testing = []
 
 [lib]
-name = "cqrust"
+name = "pes"
 plugin = true

@@ -5,8 +5,8 @@ authors = ["Tyler Thrailkill <tyler.b.thrailkill@gmail.com>"]
 workspace = "../../"
 
 [dependencies]
-cqrust = { path = "../../lib" }
-cqrust_codegen = { path = "../../codegen" }
+pes = { path = "../../pes" }
+pes-derive = { path = "../../pes-derive" }
 pes-common = { path = "../../pes-common" }
 lazy_static = "0.1.*"
 
@@ -14,4 +14,4 @@ lazy_static = "0.1.*"
 #rocket_codegen = { version = "0.1.2" }
 
 [dev-dependencies]
-cqrust = { path = "../../lib", features = ["testing"] }
+pes = { path = "../../pes", features = ["testing"] }
