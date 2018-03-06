@@ -1,32 +1,37 @@
 #![feature(proc_macro)]
 
+#[macro_use]
+extern crate lazy_static;
+extern crate pes_common;
 extern crate proc_macro;
 extern crate proc_macro2;
 #[macro_use]
 extern crate quote;
 extern crate syn;
-#[macro_use]
-extern crate lazy_static;
-extern crate pes_common;
 
+use pes_common::{Command, CommandBus, CommandMetadata};
 use proc_macro2::Span;
 use proc_macro::TokenStream;
 use quote::ToTokens;
+use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
+use std::sync::RwLock;
 //use std::Result;
 use syn::DeriveInput;
 use syn::Fields;
 use syn::FnArg;
 use syn::FnDecl;
-use syn::Item;
 use syn::Ident;
+use syn::Item;
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
 use syn::token::Comma;
 use syn::Type;
 
-use pes_common::{CommandMetadata, CommandBus, Command};
-use std::sync::RwLock;
 
+lazy_static! {
+    static ref REGISTER_FUNCTION_LIST: HashMap<HashEq<Command>, i32> = HashMap::new();
+}
 
 #[proc_macro_derive(Command)]
 pub fn event(input: TokenStream) -> TokenStream {
@@ -69,6 +74,7 @@ pub fn event_handler(_metadata: TokenStream, input: TokenStream) -> TokenStream 
             let declaration: &Box<FnDecl> = &struct_item.decl;
             let inputs: &Punctuated<FnArg, Comma> = &declaration.inputs;
             println!("inputs {}", inputs.len());
+            println!("ident is {}", struct_item.ident);
             TokenStream::empty()
         }
         _ => {
@@ -78,6 +84,25 @@ pub fn event_handler(_metadata: TokenStream, input: TokenStream) -> TokenStream 
             TokenStream::empty()
         }
     }
-
 }
 
+
+struct HashEq<T: ? Sized>(fn(&mut T));
+// sebk | snowe_: struct HashEq<T: ?Sized>(fn(&mut T));                                                                                                                                                                                                                                                   │ avadacatavra
+
+impl<T> PartialEq for HashEq<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 as usize == other.0 as usize
+    }
+}
+
+impl<T> Eq for HashEq<T> {}
+
+impl<T> Hash for HashEq<T> {
+    fn hash<H>(&self, state: &mut H)
+        where
+            H: Hasher
+    {
+        state.write_usize(self.0 as usize)
+    }
+}
