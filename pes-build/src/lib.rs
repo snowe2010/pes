@@ -1,8 +1,8 @@
 #[macro_use] extern crate quote;
-extern crate syn;
+#[macro_use] extern crate syn;
 
 use syn::{Attribute, Ident, Item, ItemFn, ItemMod, Lit,
-          Meta, MetaNameValue, ItemImpl, ImplItem, ImplItemMethod, Type, TypePath};
+          Meta, MetaNameValue, ItemImpl, ImplItem, ImplItemMethod, Type, TypePath, parse_quote};
 use std::env;
 use std::io::{Read, Write};
 use std::fs::File;
@@ -39,16 +39,17 @@ fn parse(mod_path: PathBuf, items: Vec<Item>) -> Vec<syn::Path> {
                     match item {
                         ImplItem::Method(ImplItemMethod { ref attrs, ref sig, .. })
                         if any_attr_is(attrs, "command_handler") => {
-                            let method_name: syn::Path = sig.ident.into();
-//                            let built;
+                            let method_name: syn::PathSegment = sig.ident.into();
                             match *self_ty {
-                                Type::Path(TypePath { path, .. }) => {
+                                Type::Path(TypePath { ref path, .. }) => {
 //                                    path.join(method_name);
-                                    method_name.segments.insert(0, path.into());
+                                    let mut built = path.clone();
+                                    built.segments.push(method_name);
+//                                    method_name.segments.insert(0, path.into());
+                                    names.push(built);
                                 }
                                 _ => {}
                             }
-                            names.push(method_name);
                         }
                         _ => {}
                     }
