@@ -3,5 +3,6 @@ members = [
   "pes-common",
   "pes/",
   "pes-derive/",
+  "pes-build/",
   "examples/hello_world"
 ]

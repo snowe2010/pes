@@ -41,6 +41,7 @@ version = "0.0.1"
 dependencies = [
  "lazy_static 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "pes 0.0.1",
+ "pes-build 0.1.0",
  "pes-common 0.1.0",
  "pes-derive 0.0.1",
 ]
@@ -92,6 +93,14 @@ dependencies = [
  "maplit 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pes-common 0.1.0",
  "pes-derive 0.0.1",
+]
+
+[[package]]
+name = "pes-build"
+version = "0.1.0"
+dependencies = [
+ "quote 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 0.12.13 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

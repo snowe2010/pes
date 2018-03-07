@@ -1,0 +1,8 @@
+[package]
+name = "pes-build"
+version = "0.1.0"
+authors = ["Tyler Thrailkill <tyler.thrailkill@promontech.com>"]
+
+[dependencies]
+syn = { version = "0.12", features = ["parsing", "full"] }
+quote = "0.4"

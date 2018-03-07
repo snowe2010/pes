@@ -13,41 +13,24 @@ use pes_common::{Command, CommandBus, CommandMetadata};
 use proc_macro2::Span;
 use proc_macro::TokenStream;
 use quote::ToTokens;
+use syn::{DeriveInput, Fields, FnArg, FnDecl, Ident, Item, Type};
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::sync::RwLock;
-//use std::Result;
-use syn::DeriveInput;
-use syn::Fields;
-use syn::FnArg;
-use syn::FnDecl;
-use syn::Ident;
-use syn::Item;
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
 use syn::token::Comma;
-use syn::Type;
-
-
-lazy_static! {
-    static ref REGISTER_FUNCTION_LIST: HashMap<HashEq<Command>, i32> = HashMap::new();
-}
 
 #[proc_macro_derive(Command)]
-pub fn event(input: TokenStream) -> TokenStream {
+pub fn command(input: TokenStream) -> TokenStream {
     let ast: DeriveInput = syn::parse(input).unwrap();
-
-    // Build the impl
-    let gen = impl_hello_world(&ast);
-
-    // Return the generated impl
+    let gen = generate_command_impl(&ast);
     gen.into()
 }
 
-fn impl_hello_world(ast: &syn::DeriveInput) -> quote::Tokens {
+fn generate_command_impl(ast: &syn::DeriveInput) -> quote::Tokens {
     let name = &ast.ident;
     let stringified_name = format!("MYEVENT_METADATA_{}", name.to_string().to_uppercase());
-//    println!("Stringified name {}", stringified_name);
     let ident = Ident::from(stringified_name);
     quote! {
         lazy_static! {
@@ -65,6 +48,10 @@ fn impl_hello_world(ast: &syn::DeriveInput) -> quote::Tokens {
     }
 }
 
+/// Handle the `#[event_handler]` attribute.
+///
+/// This has actually been already handled by the build script hack, so
+/// the macro itself is a no-op.
 #[proc_macro_attribute]
 pub fn event_handler(_metadata: TokenStream, input: TokenStream) -> TokenStream {
     let item: syn::Item = syn::parse(input).expect("failed to parse input");
@@ -86,6 +73,13 @@ pub fn event_handler(_metadata: TokenStream, input: TokenStream) -> TokenStream 
     }
 }
 
+/// Handle the `#[command_handler]` attribute.
+///
+/// This has actually been already handled by the build script hack, so
+/// the macro itself is a no-op.
+#[proc_macro_attribute]
+pub fn command_handler(_metadata: TokenStream, input: TokenStream) -> TokenStream { input }
+
 
 struct HashEq<T: ? Sized>(fn(&mut T));
 // sebk | snowe_: struct HashEq<T: ?Sized>(fn(&mut T));                                                                                                                                                                                                                                                   │ avadacatavra
@@ -105,4 +99,22 @@ impl<T> Hash for HashEq<T> {
     {
         state.write_usize(self.0 as usize)
     }
+}
+
+/// Generates code to import the generated function.
+///
+/// The build script hack exfiltrates the path to the generated file in
+/// an environment variable, which we use here to `include!` the file. I
+/// tried to do it using `#[path="..."] mod ...;` but that doesn't appear
+/// to work with a macro generating the path (cf. RFC issue 1516, issue 48250).
+///
+/// (This could be a `macro_rules!` macro, but I already needed the proc
+/// macro crate for `#[register]`, so here we are.)
+#[proc_macro]
+pub fn macbuild(_input: TokenStream) -> TokenStream {
+    let expanded = quote! {
+        include!(env!("PESGENBUILD"));
+    };
+
+    expanded.into()
 }
