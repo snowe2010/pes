@@ -1,7 +1,5 @@
 #![feature(proc_macro)]
 
-#[macro_use]
-extern crate lazy_static;
 extern crate pes_common;
 extern crate proc_macro;
 extern crate proc_macro2;
@@ -9,16 +7,9 @@ extern crate proc_macro2;
 extern crate quote;
 extern crate syn;
 
-use pes_common::{Command, CommandBus, CommandMetadata};
-use proc_macro2::Span;
 use proc_macro::TokenStream;
-use quote::ToTokens;
-use syn::{DeriveInput, Fields, FnArg, FnDecl, Ident, Item, Type};
-use std::collections::HashMap;
-use std::hash::{Hash, Hasher};
-use std::sync::RwLock;
+use syn::{DeriveInput, FnArg, FnDecl, Ident, Item};
 use syn::punctuated::Punctuated;
-use syn::spanned::Spanned;
 use syn::token::Comma;
 
 #[proc_macro_derive(Command)]
@@ -27,10 +18,16 @@ pub fn command(input: TokenStream) -> TokenStream {
     let gen = generate_command_impl(&ast);
     gen.into()
 }
+#[proc_macro_derive(Event)]
+pub fn event(input: TokenStream) -> TokenStream {
+    let ast: DeriveInput = syn::parse(input).unwrap();
+    let gen = generate_event_impl(&ast);
+    gen.into()
+}
 
 fn generate_command_impl(ast: &syn::DeriveInput) -> quote::Tokens {
     let name = &ast.ident;
-    let stringified_name = format!("MYEVENT_METADATA_{}", name.to_string().to_uppercase());
+    let stringified_name = format!("COMMAND_METADATA_{}", name.to_string().to_uppercase());
     let ident = Ident::from(stringified_name);
     quote! {
         lazy_static! {
@@ -42,6 +39,26 @@ fn generate_command_impl(ast: &syn::DeriveInput) -> quote::Tokens {
             }
 
             fn mut_metadata<F, R>(f: F) -> R where F: FnOnce(&mut CommandMetadata<Self>) -> R {
+                f(&mut *#ident.write().unwrap())
+            }
+        }
+    }
+}
+
+fn generate_event_impl(ast: &syn::DeriveInput) -> quote::Tokens {
+    let name = &ast.ident;
+    let stringified_name = format!("EVENT_METADATA_{}", name.to_string().to_uppercase());
+    let ident = Ident::from(stringified_name);
+    quote! {
+        lazy_static! {
+            static ref #ident: RwLock<EventMetadata<#name>> = RwLock::new(EventMetadata::new());
+        }
+        impl Event for #name {
+            fn event_metadata<F, R>(f: F) -> R where F: FnOnce(&EventMetadata<Self>) -> R {
+                f(&*#ident.read().unwrap())
+            }
+
+            fn mut_metadata<F, R>(f: F) -> R where F: FnOnce(&mut EventMetadata<Self>) -> R {
                 f(&mut *#ident.write().unwrap())
             }
         }
@@ -79,27 +96,6 @@ pub fn event_handler(_metadata: TokenStream, input: TokenStream) -> TokenStream 
 /// the macro itself is a no-op.
 #[proc_macro_attribute]
 pub fn command_handler(_metadata: TokenStream, input: TokenStream) -> TokenStream { input }
-
-
-struct HashEq<T: ? Sized>(fn(&mut T));
-// sebk | snowe_: struct HashEq<T: ?Sized>(fn(&mut T));                                                                                                                                                                                                                                                   │ avadacatavra
-
-impl<T> PartialEq for HashEq<T> {
-    fn eq(&self, other: &Self) -> bool {
-        self.0 as usize == other.0 as usize
-    }
-}
-
-impl<T> Eq for HashEq<T> {}
-
-impl<T> Hash for HashEq<T> {
-    fn hash<H>(&self, state: &mut H)
-        where
-            H: Hasher
-    {
-        state.write_usize(self.0 as usize)
-    }
-}
 
 /// Generates code to import the generated function.
 ///

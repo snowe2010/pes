@@ -107,6 +107,7 @@ dependencies = [
 name = "pes-common"
 version = "0.1.0"
 dependencies = [
+ "lazy_static 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "uuid 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

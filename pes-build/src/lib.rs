@@ -1,8 +1,8 @@
 #[macro_use] extern crate quote;
-#[macro_use] extern crate syn;
+extern crate syn;
 
-use syn::{Attribute, Ident, Item, ItemFn, ItemMod, Lit,
-          Meta, MetaNameValue, ItemImpl, ImplItem, ImplItemMethod, Type, TypePath, parse_quote};
+use syn::{Attribute, Item, ItemFn, ItemMod, Lit, Meta, MetaNameValue,
+          ItemImpl, ImplItem, ImplItemMethod, Type, TypePath};
 use std::env;
 use std::io::{Read, Write};
 use std::fs::File;
@@ -42,10 +42,8 @@ fn parse(mod_path: PathBuf, items: Vec<Item>) -> Vec<syn::Path> {
                             let method_name: syn::PathSegment = sig.ident.into();
                             match *self_ty {
                                 Type::Path(TypePath { ref path, .. }) => {
-//                                    path.join(method_name);
                                     let mut built = path.clone();
                                     built.segments.push(method_name);
-//                                    method_name.segments.insert(0, path.into());
                                     names.push(built);
                                 }
                                 _ => {}

@@ -8,9 +8,8 @@ extern crate pes;
 extern crate pes_common;
 
 use pes::{COMMAND_BUS, CommandGateway};
-use pes::EventBus;
-use pes_common::{Command, CommandBus, CommandMetadata};
-use std::collections::HashMap;
+use pes_common::command_bus::{Command, CommandMetadata};
+use pes_common::event_bus::{Event, EventMetadata};
 use std::sync::RwLock;
 
 use pes_derive::{command_handler,event_handler,macbuild};
@@ -24,12 +23,11 @@ struct BarCommand {}
 #[event_handler]
 fn test(st: String) {}
 
-
 fn main() {
     bootstrap();
 
     CarAggregate::new();
-    let command_gateway = CommandGateway::new(&COMMAND_BUS);
+    let command_gateway = CommandGateway::new();
     command_gateway.send(BarCommand {});
     command_gateway.send(BCommand { id: "hi".to_string() });
     command_gateway.send(CCommand {});
@@ -37,10 +35,9 @@ fn main() {
 }
 
 #[command_handler]
-fn handle(command: &mut BarCommand) {
+fn handle(_command: &mut BarCommand) {
     println!("I'm in the event handler!!!")
 }
-
 
 #[derive(Command)]
 struct BCommand {
@@ -53,19 +50,15 @@ struct CCommand {}
 #[derive(Command)]
 struct DCommand {}
 
+#[derive(Event)]
+struct DEvent {}
+
 struct CarAggregate {}
 
 impl CarAggregate {
-    fn new() -> CarAggregate {
-//        COMMAND_BUS.register(CarAggregate::handle_bar_command, 0);
-//        COMMAND_BUS.register(CarAggregate::handle_b_command, 0);
-//        COMMAND_BUS.register(CarAggregate::handle_c_command, 0);
-//        COMMAND_BUS.register(CarAggregate::handle_d_command, 0);
-//
-        CarAggregate {}
-    }
+    fn new() -> CarAggregate { CarAggregate {} }
     #[command_handler]
-    fn handle_bar_command(command: &mut BarCommand) {
+    fn handle_bar_command(_command: &mut BarCommand) {
         println!("I'm in the car aggregate bar command handler")
     }
     #[command_handler]
@@ -74,11 +67,11 @@ impl CarAggregate {
         println!("b command id is {}", command.id)
     }
     #[command_handler]
-    fn handle_c_command(command: &mut CCommand) {
+    fn handle_c_command(_command: &mut CCommand) {
         println!("I'm in the car aggregate C command handler")
     }
     #[command_handler]
-    fn handle_d_command(command: &mut DCommand) {
+    fn handle_d_command(_command: &mut DCommand) {
         println!("I'm in the car aggregate D command handler")
     }
 }
