@@ -22,14 +22,14 @@ fn any_attr_is(attrs: &[Attribute], ident: &str) -> bool {
 /// items: list of items in the current mod
 ///
 /// Returns a list of item paths (relative to the current module)
-fn parse(mod_path: PathBuf, items: Vec<Item>) -> Vec<syn::Path> {
+fn parse(attribute: &str, mod_path: PathBuf, items: Vec<Item>) -> Vec<syn::Path> {
     let mut names = vec![];
 
     for item in items {
         match item {
             // handle a registered function
             Item::Fn(ItemFn { ref attrs, ident, .. })
-            if any_attr_is(attrs, "command_handler") => {
+            if any_attr_is(attrs, attribute) => {
                 names.push(ident.into());
             }
 
@@ -38,7 +38,7 @@ fn parse(mod_path: PathBuf, items: Vec<Item>) -> Vec<syn::Path> {
                 for item in items {
                     match item {
                         ImplItem::Method(ImplItemMethod { ref attrs, ref sig, .. })
-                        if any_attr_is(attrs, "command_handler") => {
+                        if any_attr_is(attrs, attribute) => {
                             let method_name: syn::PathSegment = sig.ident.into();
                             match *self_ty {
                                 Type::Path(TypePath { ref path, .. }) => {
@@ -112,7 +112,7 @@ fn parse(mod_path: PathBuf, items: Vec<Item>) -> Vec<syn::Path> {
 
                 // recurse to find registered functions within the new module
                 names.extend(
-                    parse(the_path, the_items)
+                    parse(attribute, the_path, the_items)
                         .into_iter()
                         .map(|mut p| {
                             // prepend the module path to the found items
@@ -143,14 +143,16 @@ pub fn go<P: AsRef<Path>>(root: P) {
     let mut content = String::new();
     File::open(root).unwrap().read_to_string(&mut content).unwrap();
     let ast = syn::parse_file(&content).unwrap();
-    let names = parse(root.parent().unwrap().to_owned(), ast.items);
+    let event_handlers = parse("event_handler", root.parent().unwrap().to_owned(), ast.items.clone());
+    let command_handlers = parse("command_handler", root.parent().unwrap().to_owned(), ast.items);
 
     // Generate bootstrap function
     let mut out = File::create(outfile).unwrap();
     writeln!(out, "{}", quote! {
         pub fn bootstrap() {
             println!("IN THE BOOTSTRAP");
-            #(COMMAND_BUS.register(#names,0);)*
+            #(COMMAND_BUS.register(#command_handlers,0);)*
+            #(EVENT_BUS.register(#event_handlers,0);)*
         }
     }).unwrap();
 }

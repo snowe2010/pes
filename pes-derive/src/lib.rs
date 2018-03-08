@@ -25,6 +25,7 @@ pub fn event(input: TokenStream) -> TokenStream {
     gen.into()
 }
 
+/// Generate the Command trait implementation for a specific Command
 fn generate_command_impl(ast: &syn::DeriveInput) -> quote::Tokens {
     let name = &ast.ident;
     let stringified_name = format!("COMMAND_METADATA_{}", name.to_string().to_uppercase());
@@ -45,6 +46,7 @@ fn generate_command_impl(ast: &syn::DeriveInput) -> quote::Tokens {
     }
 }
 
+/// Generate the Event trait implementation for a specific Event
 fn generate_event_impl(ast: &syn::DeriveInput) -> quote::Tokens {
     let name = &ast.ident;
     let stringified_name = format!("EVENT_METADATA_{}", name.to_string().to_uppercase());
@@ -70,25 +72,7 @@ fn generate_event_impl(ast: &syn::DeriveInput) -> quote::Tokens {
 /// This has actually been already handled by the build script hack, so
 /// the macro itself is a no-op.
 #[proc_macro_attribute]
-pub fn event_handler(_metadata: TokenStream, input: TokenStream) -> TokenStream {
-    let item: syn::Item = syn::parse(input).expect("failed to parse input");
-
-    match item {
-        Item::Fn(ref struct_item) => {
-            let declaration: &Box<FnDecl> = &struct_item.decl;
-            let inputs: &Punctuated<FnArg, Comma> = &declaration.inputs;
-            println!("inputs {}", inputs.len());
-            println!("ident is {}", struct_item.ident);
-            TokenStream::empty()
-        }
-        _ => {
-//            item.span().unstable()
-//                .error("This is not a struct")
-//                .emit();
-            TokenStream::empty()
-        }
-    }
-}
+pub fn event_handler(_metadata: TokenStream, input: TokenStream) -> TokenStream { input }
 
 /// Handle the `#[command_handler]` attribute.
 ///
