@@ -22,40 +22,41 @@ fn main() {
 
     CarAggregate::new();
     let command_gateway = CommandGateway::new();
-    command_gateway.send(BarCommand {});
-    command_gateway.send(BCommand { id: "hi".to_string() });
-    command_gateway.send(CCommand {});
-    command_gateway.send(DCommand {});
+    command_gateway.send(ACommand { id: "A".to_string() });
+    command_gateway.send(BCommand { id: "B".to_string() });
+    command_gateway.send(CCommand { id: "C".to_string() });
+    command_gateway.send(DCommand { id: "D".to_string() });
 }
 
 #[command_handler]
-fn handle(_command: &mut BarCommand) {
-    println!("I'm in the event handler!!!")
+fn handle(_command: &mut ACommand) {
+    println!("I'm in a top level event handler!!!")
 }
 
 #[derive(Command)]
-struct BarCommand {}
-
+struct ACommand { id: String }
 #[derive(Command)]
-struct BCommand {
-    id: String
-}
-
+struct BCommand { id: String }
 #[derive(Command)]
-struct CCommand {}
-
+struct CCommand { id: String }
 #[derive(Command)]
-struct DCommand {}
+struct DCommand { id: String }
 
 #[derive(Event)]
+struct AEvent { id: String }
+#[derive(Event)]
 struct BEvent { id: String }
+#[derive(Event)]
+struct CEvent { id: String }
+#[derive(Event)]
+struct DEvent { id: String }
 
 struct CarAggregate {}
 
 impl CarAggregate {
     fn new() -> CarAggregate { CarAggregate {} }
     #[command_handler]
-    fn handle_bar_command(_command: &mut BarCommand) {
+    fn handle_bar_command(_command: &mut ACommand) {
         println!("I'm in the car aggregate bar command handler");
     }
     #[command_handler]
@@ -77,25 +78,24 @@ impl CarAggregate {
 struct CarProjector {}
 impl CarProjector {
     fn new() -> CarProjector { CarProjector {} }
-//
-//    #[event_handler]
-//    fn handle_bar_event(_event: &mut BarCommand) {
-//        println!("I'm in the car projector bar event handler");
-//    }
+
+    #[event_handler]
+    fn handle_bar_event(_event: &mut AEvent) {
+        println!("I'm in the car projector bar event handler");
+    }
     #[event_handler]
     fn handle_b_event(event: &mut BEvent) {
         println!("I'm in the car projector B event handler");
         println!("b event id is {}", event.id);
-//        apply(BEvent{ id: event.id.clone() })
     }
-//    #[event_handler]
-//    fn handle_c_event(_event: &mut CCommand) {
-//        println!("I'm in the car projector C event handler")
-//    }
-//    #[event_handler]
-//    fn handle_d_event(_event: &mut DCommand) {
-//        println!("I'm in the car projector D event handler")
-//    }
+    #[event_handler]
+    fn handle_c_event(_event: &mut CEvent) {
+        println!("I'm in the car projector C event handler")
+    }
+    #[event_handler]
+    fn handle_d_event(_event: &mut DEvent) {
+        println!("I'm in the car projector D event handler")
+    }
 }
 
 fn apply<T: Event>(mut event: T) {
